@@ -12,13 +12,12 @@ function Sidebar({ currentView, setCurrentView, onLogout }) {
 
   return (
     <div style={{
-      width: '260px',
-      height: '100vh',
+      width: '100%',
+      height: '100%',
       background: 'var(--bg-surface)',
       borderRight: '1px solid var(--border-light)',
-      position: 'fixed',
-      left: 0,
-      top: 0,
+      position: 'relative',
+
       display: 'flex',
       flexDirection: 'column',
       padding: '32px 16px',

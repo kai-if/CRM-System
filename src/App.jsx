@@ -79,11 +79,13 @@ function App() {
 
       </div>
 
-      <main style={{ flex: 1, padding: isMobile ? '16px' : '32px', overflowY: 'auto', width: '100%' }}>
+      <main style={{ flex: 1, padding: isMobile ? '16px' : '32px', overflowY: 'auto', minWidth: 0 }}>
+
         {/* Mobile Header Toolbar */}
         {isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border-light)' }}>
-            <h2 style={{ fontSize: '20px', color: 'var(--accent-gold-dark)', fontFamily: 'var(--font-serif)' }}>Saifi Furniture</h2>
+            <h2 style={{ fontSize: '20px', color: 'var(--accent-gold-dark)', fontStyle: 'italic', letterSpacing: '1px' }}>Saifi Furniture</h2>
+
             <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={{ padding: '8px', color: 'var(--bg-dark)' }}>
               {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
