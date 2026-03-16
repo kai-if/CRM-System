@@ -331,7 +331,7 @@ function Billing({ isMobile }) {
 
           {/* Items List */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 40px', gap: '12px', fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>
+            <div style={{ display: isMobile ? 'none' : 'grid', gridTemplateColumns: '2fr 1fr 1fr 40px', gap: '12px', fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>
               <span>Item / Description</span>
               <span>Price (₹)</span>
               <span>Qty</span>
@@ -339,24 +339,35 @@ function Billing({ isMobile }) {
             </div>
 
             {items.map((item, index) => (
-              <div key={index} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 40px', gap: '12px', alignItems: 'center' }}>
+              <div key={index} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr 40px', gap: isMobile ? '8px' : '12px', alignItems: 'center', borderBottom: isMobile ? '1px solid var(--border-light)' : 'none', paddingBottom: isMobile ? '12px' : '0px' }}>
                 <div style={{ position: 'relative', width: '100%' }}>
+                  {isMobile && <label style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Item / Description</label>}
                   <input type="text" list={`item-list-${index}`} value={item.description} onChange={(e) => {
                     handleItemChange(index, 'description', e.target.value);
-                    // Auto-fill price if matched
                     const match = (inventory || []).find(i => i.item_name.toLowerCase() === e.target.value.toLowerCase());
                     if (match) handleItemChange(index, 'price', match.price.toString());
-                  }} placeholder="e.g., Teak Sofa" style={inputStyle} />
+                  }} placeholder="e.g., Teak Sofa" style={{ ...inputStyle, width: '100%' }} />
                   <datalist id={`item-list-${index}`}>
                     {(inventory || []).map((i, idx) => <option key={idx} value={i.item_name}>{i.item_name} (Stock: {i.stock_quantity})</option>)}
                   </datalist>
                 </div>
 
-                <input type="number" value={item.price} onChange={(e) => handleItemChange(index, 'price', e.target.value)} placeholder="Rate (₹)" style={inputStyle} />
-                <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value))} style={inputStyle} min="1" />
-                <button onClick={() => handleRemoveItem(index)} style={{ color: '#E53E3E', padding: '8px' }} disabled={items.length === 1}>
-                  <Trash2 size={16} />
-                </button>
+                <div style={{ width: '100%' }}>
+                  {isMobile && <label style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Price (₹)</label>}
+                  <input type="number" value={item.price} onChange={(e) => handleItemChange(index, 'price', e.target.value)} placeholder="Rate (₹)" style={{ ...inputStyle, width: '100%' }} />
+                </div>
+
+                <div style={{ width: '100%' }}>
+                  {isMobile && <label style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Quantity</label>}
+                  <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value))} style={{ ...inputStyle, width: '100%' }} min="1" />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: isMobile ? 'flex-end' : 'center', width: '100%' }}>
+                  <button onClick={() => handleRemoveItem(index)} style={{ color: '#E53E3E', padding: '8px' }} disabled={items.length === 1}>
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+
               </div>
 
             ))}
