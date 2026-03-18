@@ -4,8 +4,25 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { supabase } from '../supabaseClient';
 
+const numberToWords = (num) => {
+  const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+  num = Math.floor(num);
+  if (num === 0) return 'Zero';
+  let n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+  if (!n) return ''; 
+  let str = '';
+  str += n[1] != 0 ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+  str += n[2] != 0 ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+  str += n[3] != 0 ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+  str += n[4] != 0 ? a[Number(n[4])] + 'Hundred ' : '';
+  str += n[5] != 0 ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
+  return str.trim() ? str.trim() + ' Rupees' : '';
+};
 
 function Billing({ isMobile }) {
+
 
 
   const [customers, setCustomers] = useState([]);
@@ -185,7 +202,8 @@ function Billing({ isMobile }) {
 
 
 
-  const handleGeneratePDF = () => {
+  const handleGeneratePDF = async () => {
+
     if (!customerName) {
       alert("Please enter Customer Name to generate invoice");
       return;
@@ -204,7 +222,10 @@ function Billing({ isMobile }) {
     // Header
     doc.setFontSize(22);
     doc.setTextColor(197, 160, 89); // Gold
-    doc.text('SAIFI FURNITURE', 105, 20, { align: 'center' });
+    doc.setFont('times', 'italic');
+    doc.text('Saifi Furniture', 105, 20, { align: 'center' });
+    doc.setFont('times', 'normal'); // Reset
+
 
     doc.setFontSize(10);
     doc.setTextColor(100);
@@ -253,16 +274,41 @@ function Billing({ isMobile }) {
     doc.setFont('helvetica', 'bold');
     doc.text(`Total: INR ${calculateTotal()}`, 140, finalY + 16);
 
+    doc.setFontSize(11);
+    const totalAmt = calculateTotal();
+    doc.text(`Amount in Words: ${numberToWords(totalAmt)} Only`, 20, finalY + 23);
+
+
     // Footer
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text('Thank you for shopping with Saifi Furniture!', 105, finalY + 40, { align: 'center' });
 
     // Open PDF in a new tab for preview and safe download/printing
-    doc.output('dataurlnewwindow');
+    // Prompt to Download
+    const invoiceName = `Invoice-SF-${Date.now().toString().slice(-6)}.pdf`;
+    
+    if (window.confirm("Do you want to Download the PDF Invoice?\nClick 'Cancel' to preview in background instead.")) {
+      doc.save(invoiceName);
+    } else {
+      doc.output('dataurlnewwindow');
+    }
+
+    if (isMobile && navigator.share) {
+      try {
+        const pdfBlob = doc.output('blob');
+        const pdfFile = new File([pdfBlob], invoiceName, { type: "application/pdf" });
+        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+          await navigator.share({
+            files: [pdfFile],
+            title: 'Invoice',
+            text: 'Here is your Invoice from Saifi Furniture',
+          });
+        }
+      } catch (e) { console.log(e); }
+    }
 
     handleSaveBill(); // Trigger save to history automatically upon generation!
-
 
     } catch (error) {
       console.error("PDF Generation Error:", error);
