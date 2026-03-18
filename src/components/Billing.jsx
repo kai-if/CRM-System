@@ -11,7 +11,7 @@ const numberToWords = (num) => {
   num = Math.floor(num);
   if (num === 0) return 'Zero';
   let n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
-  if (!n) return ''; 
+  if (!n) return '';
   let str = '';
   str += n[1] != 0 ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
   str += n[2] != 0 ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
@@ -124,7 +124,7 @@ function Billing({ isMobile }) {
     };
 
     // Auto-save Customer if not found (matching BOTH Name and Phone)
-    const customerExists = customers.some(c => 
+    const customerExists = customers.some(c =>
       c.name.toLowerCase() === customerName.trim().toLowerCase() &&
       c.phone.replace(/\D/g, '') === (customerPhone || '').replace(/\D/g, '')
     );
@@ -136,7 +136,7 @@ function Billing({ isMobile }) {
         address: 'N/A',
         items: items[0]?.description || 'General Item'
       }]).select();
-      
+
       if (newCustomer) {
         setCustomers([newCustomer[0], ...customers]);
       }
@@ -181,10 +181,10 @@ function Billing({ isMobile }) {
   const handleDeleteBill = async (id) => {
     const { error } = await supabase.from('bills').delete().eq('id', id);
     if (!error) {
-       setBills(bills.filter(b => b.id !== id));
-       setDeletingId(null);
+      setBills(bills.filter(b => b.id !== id));
+      setDeletingId(null);
     } else {
-       alert("Error deleting: " + error.message);
+      alert("Error deleting: " + error.message);
     }
   };
 
@@ -219,96 +219,96 @@ function Billing({ isMobile }) {
 
 
 
-    // Header
-    doc.setFontSize(22);
-    doc.setTextColor(197, 160, 89); // Gold
-    doc.setFont('times', 'italic');
-    doc.text('Saifi Furniture', 105, 20, { align: 'center' });
-    doc.setFont('times', 'normal'); // Reset
+      // Header
+      doc.setFontSize(22);
+      doc.setTextColor(197, 160, 89); // Gold
+      doc.setFont('times', 'italic');
+      doc.text('Saifi Furniture', 105, 20, { align: 'center' });
+      doc.setFont('times', 'normal'); // Reset
 
 
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text('A Trusted Name For Wooden Furniture', 105, 26, { align: 'center' });
-    doc.text('Mangal Parao, Bareilly Road, Haldwani, Uttarakhand - 263139', 105, 32, { align: 'center' });
-    doc.text('Contact: +91 8077441194 | saifi,furn@gmail.com', 105, 37, { align: 'center' });
-    doc.line(20, 42, 190, 42);
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text('A Trusted Name For Wooden Furniture', 105, 26, { align: 'center' });
+      doc.text('Mangal Parao, Bareilly Road, Haldwani, Uttarakhand - 263139', 105, 32, { align: 'center' });
+      doc.text('Contact: +91 8077441194 | saifi.furn@gmail.com', 105, 37, { align: 'center' });
+      doc.line(20, 42, 190, 42);
 
-    // Bill Details (Shifted Down)
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.text(`Customer: ${customerName}`, 20, 52);
-    doc.text(`Phone: ${customerPhone || 'N/A'}`, 20, 59);
-    doc.text(`Date: ${formatDate(billDate)}`, 150, 52);
-
-
-    doc.text(`Invoice No: SF-${Date.now().toString().slice(-6)}`, 150, 59);
+      // Bill Details (Shifted Down)
+      doc.setFontSize(12);
+      doc.setTextColor(0);
+      doc.text(`Customer: ${customerName}`, 20, 52);
+      doc.text(`Phone: ${customerPhone || 'N/A'}`, 20, 59);
+      doc.text(`Date: ${formatDate(billDate)}`, 150, 52);
 
 
-    // Table
-    const tableRows = items.map((item, i) => [
-      i + 1,
-      item.description || 'General Item',
-      item.quantity,
-      `INR ${item.price}`,
-      `INR ${(parseFloat(item.price || 0) * item.quantity).toFixed(2)}`
-    ]);
-
-    autoTable(doc, {
-      startY: 75,
-      head: [['#', 'Description', 'Quantity', 'Rate', 'Amount']],
-      body: tableRows,
-      theme: 'striped',
-      headStyles: { fillColor: [197, 160, 89], textColor: [255, 255, 255] },
-    });
+      doc.text(`Invoice No: SF-${Date.now().toString().slice(-6)}`, 150, 59);
 
 
+      // Table
+      const tableRows = items.map((item, i) => [
+        i + 1,
+        item.description || 'General Item',
+        item.quantity,
+        `INR ${item.price}`,
+        `INR ${(parseFloat(item.price || 0) * item.quantity).toFixed(2)}`
+      ]);
 
-    const finalY = doc.lastAutoTable.finalY + 10;
-
-    // Totals
-    doc.setFontSize(12);
-    doc.text(`Subtotal: INR ${calculateSubtotal()}`, 140, finalY);
-    doc.text(`Discount: INR ${discount}`, 140, finalY + 7);
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Total: INR ${calculateTotal()}`, 140, finalY + 16);
-
-    doc.setFontSize(11);
-    const totalAmt = calculateTotal();
-    doc.text(`Amount in Words: ${numberToWords(totalAmt)} Only`, 20, finalY + 23);
+      autoTable(doc, {
+        startY: 75,
+        head: [['#', 'Description', 'Quantity', 'Rate', 'Amount']],
+        body: tableRows,
+        theme: 'striped',
+        headStyles: { fillColor: [197, 160, 89], textColor: [255, 255, 255] },
+      });
 
 
-    // Footer
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Thank you for shopping with Saifi Furniture!', 105, finalY + 40, { align: 'center' });
 
-    // Open PDF in a new tab for preview and safe download/printing
-    // Prompt to Download
-    const invoiceName = `Invoice-SF-${Date.now().toString().slice(-6)}.pdf`;
-    
-    if (window.confirm("Do you want to Download the PDF Invoice?\nClick 'Cancel' to preview in background instead.")) {
-      doc.save(invoiceName);
-    } else {
-      doc.output('dataurlnewwindow');
-    }
+      const finalY = doc.lastAutoTable.finalY + 10;
 
-    if (isMobile && navigator.share) {
-      try {
-        const pdfBlob = doc.output('blob');
-        const pdfFile = new File([pdfBlob], invoiceName, { type: "application/pdf" });
-        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-          await navigator.share({
-            files: [pdfFile],
-            title: 'Invoice',
-            text: 'Here is your Invoice from Saifi Furniture',
-          });
-        }
-      } catch (e) { console.log(e); }
-    }
+      // Totals
+      doc.setFontSize(12);
+      doc.text(`Subtotal: INR ${calculateSubtotal()}`, 140, finalY);
+      doc.text(`Discount: INR ${discount}`, 140, finalY + 7);
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Total: INR ${calculateTotal()}`, 140, finalY + 16);
 
-    handleSaveBill(); // Trigger save to history automatically upon generation!
+      doc.setFontSize(11);
+      const totalAmt = calculateTotal();
+      doc.text(`Amount in Words: ${numberToWords(totalAmt)} Only`, 20, finalY + 23);
+
+
+      // Footer
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Thank you for shopping with Saifi Furniture!', 105, finalY + 40, { align: 'center' });
+
+      // Open PDF in a new tab for preview and safe download/printing
+      // Prompt to Download
+      const invoiceName = `Invoice-SF-${Date.now().toString().slice(-6)}.pdf`;
+
+      if (window.confirm("Do you want to Download the PDF Invoice?\nClick 'Cancel' to preview in background instead.")) {
+        doc.save(invoiceName);
+      } else {
+        doc.output('dataurlnewwindow');
+      }
+
+      if (isMobile && navigator.share) {
+        try {
+          const pdfBlob = doc.output('blob');
+          const pdfFile = new File([pdfBlob], invoiceName, { type: "application/pdf" });
+          if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+            await navigator.share({
+              files: [pdfFile],
+              title: 'Invoice',
+              text: 'Here is your Invoice from Saifi Furniture',
+            });
+          }
+        } catch (e) { console.log(e); }
+      }
+
+      handleSaveBill(); // Trigger save to history automatically upon generation!
 
     } catch (error) {
       console.error("PDF Generation Error:", error);
