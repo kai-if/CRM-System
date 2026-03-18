@@ -1,4 +1,5 @@
-import { LayoutDashboard, Users, FileText, BarChart3, LogOut, Package } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, BarChart3, LogOut, Package, Truck } from 'lucide-react';
+
 
 function Sidebar({ currentView, setCurrentView, onLogout }) {
   const menuItems = [
@@ -7,6 +8,7 @@ function Sidebar({ currentView, setCurrentView, onLogout }) {
     { id: 'billing', label: 'Billing', icon: FileText },
     { id: 'reports', label: 'Reports', icon: BarChart3 },
     { id: 'inventory', label: 'Inventory', icon: Package },
+    { id: 'purchases', label: 'Purchases', icon: Truck },
   ];
 
 

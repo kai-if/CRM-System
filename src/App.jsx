@@ -8,6 +8,8 @@ import Billing from './components/Billing';
 import Reports from './components/Reports';
 import Login from './components/Login';
 import Inventory from './components/Inventory';
+import Purchases from './components/Purchases';
+
 
 function App() {
   const [activeView, setActiveView] = useState('dashboard');
@@ -46,6 +48,7 @@ function App() {
       case 'billing': return <Billing isMobile={isMobile} />;
       case 'reports': return <Reports isMobile={isMobile} />;
       case 'inventory': return <Inventory isMobile={isMobile} />;
+      case 'purchases': return <Purchases isMobile={isMobile} />;
       default: return <Dashboard isMobile={isMobile} />;
     }
   };
