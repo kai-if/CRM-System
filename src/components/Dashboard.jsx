@@ -1,27 +1,31 @@
 import { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { DollarSign, Users, ShoppingBag, TrendingUp } from 'lucide-react';
+import { DollarSign, Users, ShoppingBag, TrendingUp, X, FileText } from 'lucide-react';
 import { supabase } from '../supabaseClient';
-
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 function Dashboard({ isMobile }) {
 
-
   const [bills, setBills] = useState([]);
   const [customersCount, setCustomersCount] = useState(0);
+  const [customers, setCustomers] = useState([]);
   const [metrics, setMetrics] = useState({ totalRevenue: 0, itemsSold: 0, outstandings: 0 });
   const [chartData, setChartData] = useState([]);
+  const [selectedSale, setSelectedSale] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: savedBills } = await supabase.from('bills').select('*');
+      const { data: savedBills } = await supabase.from('bills').select('*').order('date', { ascending: false });
       const { data: savedCust } = await supabase.from('customers').select('*');
-      
+
       const billsList = savedBills || [];
       const customersList = savedCust || [];
 
       setBills(billsList);
       setCustomersCount(customersList.length);
+      setCustomers(customersList);
+
 
       // Calculate metrics
       let revenue = 0;
@@ -52,6 +56,15 @@ function Dashboard({ isMobile }) {
     fetchData();
   }, []);
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'N/A';
+    const d = new Date(dateStr);
+    if (isNaN(d)) return dateStr;
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
 
   const stats = [
 
@@ -132,12 +145,13 @@ function Dashboard({ isMobile }) {
           <h3 style={{ marginBottom: '20px', fontSize: '18px' }}>Recent Sales</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
             {bills.slice(0, 4).map((sale) => (
-              <div key={sale.id} style={{
+              <div key={sale.id} onClick={() => setSelectedSale(sale)} style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 paddingBottom: '12px',
-                borderBottom: '1px solid var(--border-light)'
+                borderBottom: '1px solid var(--border-light)',
+                cursor: 'pointer'
               }}>
                 <div>
                   <p style={{ fontWeight: 500, fontSize: '14px' }}>{sale.customer_name}</p>
@@ -151,6 +165,52 @@ function Dashboard({ isMobile }) {
           </div>
         </div>
       </div>
+
+      {/* Modal View Detail */}
+      {selectedSale && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+          <div className="luxury-card" style={{ width: '450px', background: 'white', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative' }}>
+            <button onClick={() => setSelectedSale(null)} style={{ position: 'absolute', top: '16px', right: '16px', color: 'var(--text-muted)', background: 'transparent', border: 'none' }}><X size={20} /></button>
+            <h3 style={{ fontSize: '18px', borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>Sale Details</h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
+              <p><strong>Invoice No:</strong> SF-{selectedSale.id.slice(-6).toUpperCase()}</p>
+              <p><strong>Customer:</strong> {selectedSale.customer_name}</p>
+              <p><strong>Address:</strong> {customers.find(c => c.name === selectedSale.customer_name)?.address || 'N/A'}</p>
+              <p><strong>Date:</strong> {formatDate(selectedSale.date)}</p>
+            </div>
+
+
+            <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid var(--border-light)', borderRadius: '8px', padding: '12px' }}>
+              <table style={{ width: '100%', fontSize: '12px', textAlign: 'left', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-light)', color: 'var(--text-muted)' }}>
+                    <th style={{ paddingBottom: '8px' }}>Item</th>
+                    <th style={{ paddingBottom: '8px' }}>Qty</th>
+                    <th style={{ paddingBottom: '8px' }}>Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(selectedSale.items || []).map((item, id) => (
+                    <tr key={id} style={{ borderBottom: '1px solid #F9F6F2' }}>
+                      <td style={{ padding: '6px 0' }}>{item.description || 'General Item'}</td>
+                      <td>{item.quantity || 1}</td>
+                      <td>₹{item.price}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 600 }}>Total Paid:</span>
+              <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--accent-gold-dark)' }}>₹{selectedSale.total}</span>
+            </div>
+
+            <button onClick={() => setSelectedSale(null)} className="luxury-button" style={{ marginTop: '8px' }}>Close</button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
