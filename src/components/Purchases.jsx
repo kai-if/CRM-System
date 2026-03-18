@@ -130,7 +130,7 @@ function Purchases({ isMobile }) {
   const handleUpdatePayment = async (e) => {
     e.preventDefault();
     if (!updatingRecord) return;
-    
+
     const { error } = await supabase.from('procurement').update({
       status: 'Paid',
       amount_paid: updatingRecord.total_cost, // Clear fully
@@ -361,7 +361,7 @@ function Purchases({ isMobile }) {
                       <span style={{ fontSize: '10px', padding: '3px 6px', borderRadius: '4px', background: r.status === 'Pending' ? '#FEE2E2' : r.status === 'Partially Paid' ? '#FEF3C7' : '#DCFCE7', color: r.status === 'Pending' ? '#B91C1C' : r.status === 'Partially Paid' ? '#D97706' : '#15803D', fontWeight: 500 }}>
                         {r.status || 'Paid'}
                       </span>
-                      
+
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
                         <span style={{ color: '#15803D', fontWeight: 600 }}>₹{(r.amount_paid || 0).toLocaleString()}</span>
                         {r.status !== 'Paid' && (
@@ -404,7 +404,7 @@ function Purchases({ isMobile }) {
                   </select>
                 </div>
               </div>
-              
+
               <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                 <button type="submit" className="gold-button" style={{ flex: 1, padding: '10px' }}>Mark as Paid</button>
                 <button type="button" onClick={() => setUpdatingRecord(null)} style={{ flex: 1, border: '1px solid var(--border-light)', borderRadius: '8px', fontSize: '14px' }}>Cancel</button>
@@ -421,6 +421,8 @@ function Purchases({ isMobile }) {
 }
 
 const inputStyle = {
+  width: '100%',
+  boxSizing: 'border-box',
   padding: '10px 12px',
   borderRadius: '8px',
   border: '1px solid var(--border-light)',
