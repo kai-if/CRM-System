@@ -182,7 +182,8 @@ function Purchases({ isMobile }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 2fr', gap: '24px', alignItems: 'start' }}>
         {/* Form */}
-        <form onSubmit={handleSaveRecord} className="luxury-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <form onSubmit={handleSaveRecord} className="luxury-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', minWidth: 0 }}>
+
           <h3 style={{ fontSize: '16px', borderBottom: '1px solid var(--border-light)', paddingBottom: '8px' }}>Log New Purchase / Cost</h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -284,7 +285,7 @@ function Purchases({ isMobile }) {
         </form>
 
         {/* History Table */}
-        <div className="luxury-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflow: 'hidden' }}>
+        <div className="luxury-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflow: 'hidden', minWidth: 0 }}>
           <h3 style={{ fontSize: '16px', borderBottom: '1px solid var(--border-light)', paddingBottom: '8px' }}>Purchase History Ledger</h3>
 
           <div style={{ overflowX: 'auto' }}>
