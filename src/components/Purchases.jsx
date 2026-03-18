@@ -288,56 +288,94 @@ function Purchases({ isMobile }) {
         <div className="luxury-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflow: 'hidden', minWidth: 0 }}>
           <h3 style={{ fontSize: '16px', borderBottom: '1px solid var(--border-light)', paddingBottom: '8px' }}>Purchase History Ledger</h3>
 
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-              <thead>
-                <tr style={{ textAlign: 'left', borderBottom: '2px solid var(--border-light)', color: 'var(--text-muted)' }}>
-                  <th style={{ padding: '8px' }}>Item</th>
-                  <th style={{ padding: '8px' }}>Type</th>
-                  <th style={{ padding: '8px' }}>Qty</th>
-                  <th style={{ padding: '8px' }}>Total</th>
-                  <th style={{ padding: '8px' }}>Supplier</th>
-                  <th style={{ padding: '8px' }}>Date</th>
-                  <th style={{ padding: '8px' }}>Status</th>
-                  <th style={{ padding: '8px' }}>Paid / Due</th>
-                  <th style={{ padding: '8px' }}>Mode</th>
-                  <th style={{ padding: '8px' }}></th>
-
-
-                </tr>
-              </thead>
-              <tbody>
+          <div style={{ overflowX: isMobile ? 'visible' : 'auto' }}>
+            {!isMobile ? (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                <thead>
+                  <tr style={{ textAlign: 'left', borderBottom: '2px solid var(--border-light)', color: 'var(--text-muted)' }}>
+                    <th style={{ padding: '8px' }}>Item</th>
+                    <th style={{ padding: '8px' }}>Type</th>
+                    <th style={{ padding: '8px' }}>Qty</th>
+                    <th style={{ padding: '8px' }}>Total</th>
+                    <th style={{ padding: '8px' }}>Supplier</th>
+                    <th style={{ padding: '8px' }}>Date</th>
+                    <th style={{ padding: '8px' }}>Status</th>
+                    <th style={{ padding: '8px' }}>Paid / Due</th>
+                    <th style={{ padding: '8px' }}>Mode</th>
+                    <th style={{ padding: '8px' }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {records.map((r) => (
+                    <tr key={r.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                      <td style={{ padding: '8px', fontWeight: 500 }}>{r.item_name}</td>
+                      <td style={{ padding: '8px' }}><span style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', background: r.item_type === 'Raw Material' ? '#FFF5EC' : r.item_type === 'Ready Goods' ? '#EDFDF2' : '#F0F4FE', color: r.item_type === 'Raw Material' ? '#BD5D00' : r.item_type === 'Ready Goods' ? '#147D36' : '#2B5797' }}>{r.item_type}</span></td>
+                      <td style={{ padding: '8px' }}>{r.quantity}</td>
+                      <td style={{ padding: '8px', fontWeight: 600 }}>₹{(r.total_cost || 0).toLocaleString()}</td>
+                      <td style={{ padding: '8px' }}>{r.supplier_name}</td>
+                      <td style={{ padding: '8px' }}>{formatDate(r.purchase_date)}</td>
+                      <td style={{ padding: '8px' }}>
+                        <span style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', background: r.status === 'Pending' ? '#FEE2E2' : r.status === 'Partially Paid' ? '#FEF3C7' : '#DCFCE7', color: r.status === 'Pending' ? '#B91C1C' : r.status === 'Partially Paid' ? '#D97706' : '#15803D', fontWeight: 500 }}>
+                          {r.status || 'Paid'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '8px' }}>
+                        <span style={{ color: '#15803D' }}>₹{(r.amount_paid || 0).toLocaleString()}</span>
+                        {r.status !== 'Paid' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
+                            <div style={{ fontSize: '11px', color: '#B91C1C' }}>Due: ₹{((r.total_cost || 0) - (r.amount_paid || 0)).toLocaleString()}</div>
+                            <button onClick={() => { setUpdatingRecord(r); setUpdateDate(new Date().toISOString().split('T')[0]); }} style={{ fontSize: '10px', padding: '2px 6px', background: '#FEF3C7', color: '#D97706', border: '1px solid #F59E0B', borderRadius: '4px', cursor: 'pointer', width: 'max-content' }}>Clear Due</button>
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ padding: '8px', color: 'var(--text-muted)' }}>{r.payment_mode || 'Cash'}</td>
+                      <td style={{ padding: '8px' }}><button onClick={() => handleDeleteRecord(r.id)} style={{ color: '#E53E3E' }}><Trash2 size={16} /></button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {records.map((r) => (
-                  <tr key={r.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                    <td style={{ padding: '8px', fontWeight: 500 }}>{r.item_name}</td>
-                    <td style={{ padding: '8px' }}><span style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', background: r.item_type === 'Raw Material' ? '#FFF5EC' : r.item_type === 'Ready Goods' ? '#EDFDF2' : '#F0F4FE', color: r.item_type === 'Raw Material' ? '#BD5D00' : r.item_type === 'Ready Goods' ? '#147D36' : '#2B5797' }}>{r.item_type}</span></td>
-                    <td style={{ padding: '8px' }}>{r.quantity}</td>
-                    <td style={{ padding: '8px', fontWeight: 600 }}>₹{(r.total_cost || 0).toLocaleString()}</td>
-                    <td style={{ padding: '8px' }}>{r.supplier_name}</td>
-                    <td style={{ padding: '8px' }}>{formatDate(r.purchase_date)}</td>
-                    <td style={{ padding: '8px' }}>
-                      <span style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', background: r.status === 'Pending' ? '#FEE2E2' : r.status === 'Partially Paid' ? '#FEF3C7' : '#DCFCE7', color: r.status === 'Pending' ? '#B91C1C' : r.status === 'Partially Paid' ? '#D97706' : '#15803D', fontWeight: 500 }}>
+                  <div key={r.id} style={{ padding: '12px', background: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: '8px', border: '1px solid var(--border-light)', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <h4 style={{ fontSize: '14px', fontWeight: 600 }}>{r.item_name}</h4>
+                        <span style={{ fontSize: '10px', padding: '2px 4px', borderRadius: '4px', background: r.item_type === 'Raw Material' ? '#FFF5EC' : r.item_type === 'Ready Goods' ? '#EDFDF2' : '#F0F4FE', color: r.item_type === 'Raw Material' ? '#BD5D00' : r.item_type === 'Ready Goods' ? '#147D36' : '#2B5797' }}>{r.item_type}</span>
+                      </div>
+                      <button onClick={() => handleDeleteRecord(r.id)} style={{ color: '#E53E3E' }}><Trash2 size={16} /></button>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px', borderTop: '1px solid #F1F5F9', paddingTop: '8px' }}>
+                      <p style={{ color: 'var(--text-muted)' }}>Qty: <strong style={{ color: 'var(--text-main)' }}>{r.quantity}</strong></p>
+                      <p style={{ color: 'var(--text-muted)' }}>Total: <strong style={{ color: '#C5A059' }}>₹{(r.total_cost || 0).toLocaleString()}</strong></p>
+                    </div>
+
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                      <p>Supplier: <strong style={{ color: 'var(--text-main)' }}>{r.supplier_name}</strong></p>
+                      <p>Date: <strong style={{ color: 'var(--text-main)' }}>{formatDate(r.purchase_date)}</strong></p>
+                      <p>Mode: <strong style={{ color: 'var(--text-main)' }}>{r.payment_mode || 'Cash'}</strong></p>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #F1F5F9', paddingTop: '8px', marginTop: '4px' }}>
+                      <span style={{ fontSize: '10px', padding: '3px 6px', borderRadius: '4px', background: r.status === 'Pending' ? '#FEE2E2' : r.status === 'Partially Paid' ? '#FEF3C7' : '#DCFCE7', color: r.status === 'Pending' ? '#B91C1C' : r.status === 'Partially Paid' ? '#D97706' : '#15803D', fontWeight: 500 }}>
                         {r.status || 'Paid'}
                       </span>
-                    </td>
-                    <td style={{ padding: '8px' }}>
-                      <span style={{ color: '#15803D' }}>₹{(r.amount_paid || 0).toLocaleString()}</span>
-                      {r.status !== 'Paid' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
-                          <div style={{ fontSize: '11px', color: '#B91C1C' }}>Due: ₹{((r.total_cost || 0) - (r.amount_paid || 0)).toLocaleString()}</div>
-                          <button onClick={() => { setUpdatingRecord(r); setUpdateDate(new Date().toISOString().split('T')[0]); }} style={{ fontSize: '10px', padding: '2px 6px', background: '#FEF3C7', color: '#D97706', border: '1px solid #F59E0B', borderRadius: '4px', cursor: 'pointer', width: 'max-content' }}>Clear Due</button>
-                        </div>
-                      )}
-                    </td>
- Stream:
-                    <td style={{ padding: '8px', color: 'var(--text-muted)' }}>{r.payment_mode || 'Cash'}</td>
-                    <td style={{ padding: '8px' }}><button onClick={() => handleDeleteRecord(r.id)} style={{ color: '#E53E3E' }}><Trash2 size={16} /></button></td>
-
-
-                  </tr>
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                        <span style={{ color: '#15803D', fontWeight: 600 }}>₹{(r.amount_paid || 0).toLocaleString()}</span>
+                        {r.status !== 'Paid' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                            <span style={{ fontSize: '10px', color: '#B91C1C' }}>Due: ₹{((r.total_cost || 0) - (r.amount_paid || 0)).toLocaleString()}</span>
+                            <button onClick={() => { setUpdatingRecord(r); setUpdateDate(new Date().toISOString().split('T')[0]); }} style={{ fontSize: '10px', padding: '3px 6px', background: '#FEF3C7', color: '#D97706', border: '1px solid #F59E0B', borderRadius: '4px', cursor: 'pointer', marginTop: '2px' }}>Clear Due</button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            )}
           </div>
         </div>
       </div>
