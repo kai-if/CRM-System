@@ -17,6 +17,7 @@ function Dashboard({ isMobile }) {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [chartType, setChartType] = useState('area'); // 'area', 'bar'
+  const [visibleLines, setVisibleLines] = useState({ sales: true, expenses: true });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -152,8 +153,26 @@ function Dashboard({ isMobile }) {
       }}>
         {stats.map((stat, index) => {
           const Icon = stat.icon;
+          const isInter = stat.title === 'Total Revenue' || stat.title === 'Total Expenses';
+          const isHidden = (stat.title === 'Total Revenue' && !visibleLines.sales) || 
+                          (stat.title === 'Total Expenses' && !visibleLines.expenses);
+
           return (
-            <div key={index} className="luxury-card" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div key={index} className="luxury-card" 
+              onClick={() => {
+                if (stat.title === 'Total Revenue') setVisibleLines(p => ({ ...p, sales: !p.sales }));
+                if (stat.title === 'Total Expenses') setVisibleLines(p => ({ ...p, expenses: !p.expenses }));
+              }}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '16px',
+                cursor: isInter ? 'pointer' : 'default',
+                opacity: isHidden ? 0.4 : 1,
+                border: isInter && !isHidden ? `2px solid ${stat.color}` : '1px solid var(--border-light)',
+                background: isInter && !isHidden ? `${stat.color}05` : 'var(--bg-surface)',
+                boxShadow: isInter && !isHidden ? `0 8px 20px ${stat.color}15` : 'var(--shadow-soft)',
+                transition: 'all 0.2s ease',
+                transform: isInter && !isHidden ? 'translateY(-4px)' : undefined
+              }}>
               <div style={{
                 background: `${stat.color}15`,
                 padding: '12px',
@@ -205,8 +224,8 @@ function Dashboard({ isMobile }) {
                   <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} />
                   <YAxis stroke="var(--text-muted)" fontSize={12} />
                   <Tooltip />
-                  <Area type="monotone" dataKey="sales" stroke="#C19A6B" fillOpacity={1} fill="url(#colorSales)" strokeWidth={2} name="Sales" />
-                  <Area type="monotone" dataKey="expenses" stroke="#E53E3E" fillOpacity={1} fill="url(#colorExpenses)" strokeWidth={2} name="Expenses" />
+                  {visibleLines.sales && <Area type="monotone" dataKey="sales" stroke="#C19A6B" fillOpacity={1} fill="url(#colorSales)" strokeWidth={2} name="Sales" />}
+                  {visibleLines.expenses && <Area type="monotone" dataKey="expenses" stroke="#E53E3E" fillOpacity={1} fill="url(#colorExpenses)" strokeWidth={2} name="Expenses" />}
                 </AreaChart>
               ) : (
                 <BarChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
@@ -214,8 +233,8 @@ function Dashboard({ isMobile }) {
                   <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} />
                   <YAxis stroke="var(--text-muted)" fontSize={12} />
                   <Tooltip />
-                  <Bar dataKey="sales" fill="#C19A6B" radius={[4, 4, 0, 0]} name="Sales" />
-                  <Bar dataKey="expenses" fill="#E53E3E" radius={[4, 4, 0, 0]} name="Expenses" />
+                  {visibleLines.sales && <Bar dataKey="sales" fill="#C19A6B" radius={[4, 4, 0, 0]} name="Sales" />}
+                  {visibleLines.expenses && <Bar dataKey="expenses" fill="#E53E3E" radius={[4, 4, 0, 0]} name="Expenses" />}
                 </BarChart>
               )}
             </ResponsiveContainer>

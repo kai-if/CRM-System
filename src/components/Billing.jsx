@@ -45,6 +45,7 @@ function Billing({ isMobile }) {
 
   const [discount, setDiscount] = useState(0);
   const [discountType, setDiscountType] = useState('amount'); // 'amount' or 'percent'
+  const [finalAmount, setFinalAmount] = useState('');
   const [editingBillId, setEditingBillId] = useState(null);
 
   const [deletingId, setDeletingId] = useState(null);
@@ -106,6 +107,50 @@ function Billing({ isMobile }) {
       return isNaN(discounted) ? 0 : discounted;
     }
     return isNaN(subtotal - disc) ? 0 : subtotal - disc;
+  };
+
+  const handleFinalAmountChange = (val) => {
+    setFinalAmount(val);
+    if (val === '') {
+      setDiscount(0);
+      return;
+    }
+    const target = parseFloat(val);
+    const subtotal = calculateSubtotal();
+    const needed = subtotal - target;
+    if (needed <= 0) {
+      setDiscount(0);
+      return;
+    }
+    
+    if (discountType === 'percent') {
+      // Avoid division by zero
+      if (subtotal > 0) {
+        setDiscount(((needed / subtotal) * 100).toFixed(1));
+      } else {
+        setDiscount(0);
+      }
+    } else {
+      setDiscount(needed);
+    }
+  };
+
+  const handleDiscountTypeChange = (type) => {
+    setDiscountType(type);
+    if (finalAmount !== '') {
+      const target = parseFloat(finalAmount);
+      const subtotal = calculateSubtotal();
+      const needed = subtotal - target;
+      if (needed > 0) {
+        if (type === 'percent' && subtotal > 0) {
+          setDiscount(((needed / subtotal) * 100).toFixed(1));
+        } else {
+          setDiscount(needed);
+        }
+      } else {
+        setDiscount(0);
+      }
+    }
   };
 
   const handleSaveBill = async () => {
@@ -250,8 +295,8 @@ function Billing({ isMobile }) {
         i + 1,
         item.description || 'General Item',
         item.quantity,
-        `INR ${item.price}`,
-        `INR ${(parseFloat(item.price || 0) * item.quantity).toFixed(2)}`
+        `Rs. ${parseFloat(item.price || 0).toLocaleString()}/-`,
+        `Rs. ${(parseFloat(item.price || 0) * item.quantity).toLocaleString()}/-`
       ]);
 
       autoTable(doc, {
@@ -268,11 +313,11 @@ function Billing({ isMobile }) {
 
       // Totals
       doc.setFontSize(12);
-      doc.text(`Subtotal: INR ${calculateSubtotal()}`, 140, finalY);
-      doc.text(`Discount: INR ${discount}`, 140, finalY + 7);
+      doc.text(`Subtotal: Rs. ${calculateSubtotal().toLocaleString()}/-`, 140, finalY);
+      doc.text(`Discount: ${discountType === 'percent' ? discount + '%' : 'Rs. ' + parseFloat(discount || 0).toLocaleString() + '/-'}`, 140, finalY + 7);
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text(`Total: INR ${calculateTotal()}`, 140, finalY + 16);
+      doc.text(`Total: Rs. ${calculateTotal().toLocaleString()}/-`, 140, finalY + 16);
 
       doc.setFontSize(11);
       const totalAmt = calculateTotal();
@@ -440,11 +485,20 @@ function Billing({ isMobile }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ color: 'var(--text-muted)' }}>Discount</span>
               <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                <select value={discountType} onChange={(e) => setDiscountType(e.target.value)} style={{ ...inputStyle, padding: '4px', fontSize: '12px', background: 'white' }}>
+                <select value={discountType} onChange={(e) => handleDiscountTypeChange(e.target.value)} style={{ ...inputStyle, padding: '4px', fontSize: '12px', background: 'white' }}>
                   <option value="amount">₹</option>
                   <option value="percent">%</option>
                 </select>
-                <input type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} style={{ ...inputStyle, width: '70px', textAlign: 'right', padding: '4px 8px' }} />
+                <input type="number" value={discount} onChange={(e) => { setDiscount(e.target.value); setFinalAmount(''); }} style={{ ...inputStyle, width: '70px', textAlign: 'right', padding: '4px 8px' }} />
+              </div>
+            </div>
+
+            {/* NEW: Final Amount Solver */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Final Amount Paid</span>
+              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>₹</span>
+                <input type="number" value={finalAmount} onChange={(e) => handleFinalAmountChange(e.target.value)} placeholder="Target Total" style={{ ...inputStyle, width: '100px', textAlign: 'right', padding: '4px 8px' }} />
               </div>
             </div>
             {editingBillId && (
