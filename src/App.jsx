@@ -92,7 +92,7 @@ function App() {
 
       </div>
 
-      <main style={{ flex: 1, padding: isMobile ? '16px' : '32px', overflowY: 'auto', minWidth: 0 }}>
+      <main className="fade-in" key={activeView} style={{ flex: 1, padding: isMobile ? '16px' : '32px', overflowY: 'auto', minWidth: 0 }}>
 
         {/* Mobile Header Toolbar */}
         {isMobile && (

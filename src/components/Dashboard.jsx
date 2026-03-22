@@ -117,7 +117,7 @@ function Dashboard({ isMobile }) {
   const minDate = '1930-01-01'; // Prevents choosing ancient dates
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', width: '100%' }}>
+    <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '32px', width: '100%' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
