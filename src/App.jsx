@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
+import { supabase } from './supabaseClient';
 
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -13,9 +14,7 @@ import Purchases from './components/Purchases';
 
 function App() {
   const [activeView, setActiveView] = useState('dashboard');
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    sessionStorage.getItem('sf_auth') === 'true'
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -27,18 +26,29 @@ function App() {
       if (!mobile) setIsSidebarOpen(false); // Close drawer on desktop
     };
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    
+    // 🔐 Listen to Supabase Auth Sessions
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleLogin = () => {
-    setIsAuthenticated(true);
-    sessionStorage.setItem('sf_auth', 'true');
+    // Handled dynamically by Supabase onAuthStateChange now!
   };
 
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem('sf_auth');
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
   };
 
   const renderView = () => {

@@ -1,20 +1,25 @@
 import { useState } from 'react';
 import { Lock } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 
 function Login({ onLogin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Default fallback or load from localStorage
-    const savedPassword = localStorage.getItem('sf_admin_password') || 'admin123';
+    setError('');
 
-    if (password === savedPassword) {
-      onLogin();
-    } else {
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: 'saifi.furn@gmail.com',
+      password: password
+    });
+
+    if (authError) {
       setError('Invalid Access Password');
       setPassword('');
+    } else {
+      onLogin();
     }
   };
 
