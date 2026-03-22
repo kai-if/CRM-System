@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Plus, Trash2, FileText, Share2, Save } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -584,10 +585,10 @@ function Billing({ isMobile }) {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {deletingId && (
+      {deletingId && createPortal(
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-          background: 'rgba(0,0,0,0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
+          background: 'rgba(0,0,0,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999
         }}>
           <div className="luxury-card" style={{ width: '350px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '16px', background: 'white' }}>
             <h3 style={{ fontSize: '18px' }}>Delete Invoice</h3>
@@ -597,7 +598,8 @@ function Billing({ isMobile }) {
               <button onClick={() => setDeletingId(null)} style={{ padding: '10px 16px', borderRadius: '8px', background: 'var(--border-light)', color: 'var(--text-main)' }}>Cancel</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
 

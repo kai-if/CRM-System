@@ -246,20 +246,26 @@ function Dashboard({ isMobile }) {
           <h3 style={{ marginBottom: '20px', fontSize: '18px' }}>Recent Sales</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
             {bills.slice(0, 4).map((sale) => (
-              <div key={sale.id} onClick={() => setSelectedSale(sale)} style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingBottom: '12px',
-                borderBottom: '1px solid var(--border-light)',
-                cursor: 'pointer'
-              }}>
+              <div key={sale.id} onClick={() => setSelectedSale(sale)} 
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(197, 160, 89, 0.05)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 16px',
+                  margin: '0 -16px',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s ease',
+                  borderBottom: '1px solid var(--border-light)'
+                }}>
                 <div>
                   <p style={{ fontWeight: 500, fontSize: '14px' }}>{sale.customer_name}</p>
 
                   <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{sale.items[0]?.description || 'Furniture'} {sale.items.length > 1 ? `(+${sale.items.length - 1} more)` : ''}</p>
                 </div>
-                <p style={{ fontWeight: 600, color: 'var(--accent-gold-dark)', fontSize: '14px' }}>₹{sale.total}</p>
+                <p style={{ fontWeight: 600, color: 'var(--accent-gold-dark)', fontSize: '14px' }}>₹{parseFloat(sale.total || 0).toLocaleString()}/-</p>
               </div>
             ))}
             {bills.length === 0 && <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px', marginTop: '20px' }}>No sales recorded yet.</p>}

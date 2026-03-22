@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, Plus, Phone, MapPin, Eye, X, Edit, Trash2, Grid, List } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -197,10 +198,10 @@ function Customers() {
       </div>
 
       {/* Modal Add Customer */}
-      {showAddModal && (
+      {showAddModal && createPortal(
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-          background: 'rgba(0,0,0,0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
+          background: 'rgba(0,0,0,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999
         }}>
           <div className="luxury-card" style={{ width: '400px', display: 'flex', flexDirection: 'column', gap: '16px', background: 'white' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>
@@ -220,7 +221,8 @@ function Customers() {
             <button className="gold-button" onClick={handleAddCustomer} style={{ marginTop: '4px' }}>Save Customer</button>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
 
@@ -338,10 +340,10 @@ function Customers() {
       )}
 
       {/* Modal Edit Customer */}
-      {editingCustomer && (
+      {editingCustomer && createPortal(
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-          background: 'rgba(0,0,0,0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
+          background: 'rgba(0,0,0,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999
         }}>
           <div className="luxury-card" style={{ width: '400px', display: 'flex', flexDirection: 'column', gap: '16px', background: 'white' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>
@@ -354,17 +356,18 @@ function Customers() {
               <input type="text" placeholder="Phone Number" value={editingCustomer.phone} onChange={e => setEditingCustomer({...editingCustomer, phone: e.target.value})} style={inputStyle} />
               <input type="text" placeholder="Address" value={editingCustomer.address} onChange={e => setEditingCustomer({...editingCustomer, address: e.target.value})} style={inputStyle} />
             </div>
-
+ 
             <button className="gold-button" onClick={handleEditCustomer} style={{ marginTop: '8px' }}>Save Changes</button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Purchase History Modal */}
-      {selectedCustomer && (
+      {selectedCustomer && createPortal(
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-          background: 'rgba(0,0,0,0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
+          background: 'rgba(0,0,0,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999
         }}>
           <div className="luxury-card" style={{ width: '500px', display: 'flex', flexDirection: 'column', gap: '16px', background: 'white', maxHeight: '80vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>
@@ -398,14 +401,15 @@ function Customers() {
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Custom Delete Confirmation Modal */}
-      {deletingId && (
+      {deletingId && createPortal(
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-          background: 'rgba(0,0,0,0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100
+          background: 'rgba(0,0,0,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999
         }}>
           <div className="luxury-card" style={{ width: '320px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', background: 'white', textAlign: 'center' }}>
             <h3 style={{ fontSize: '18px', color: '#E53E3E' }}>Confirm Delete</h3>
@@ -415,7 +419,8 @@ function Customers() {
               <button onClick={() => handleDeleteCustomer(deletingId)} className="gold-button" style={{ flex: 1, background: '#EF4444', color: 'white', border: 'none' }}>Delete</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
