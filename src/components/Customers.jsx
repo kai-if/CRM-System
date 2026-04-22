@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Search, Plus, Phone, MapPin, Eye, X, Edit, Trash2, Grid, List } from 'lucide-react';
 import jsPDF from 'jspdf';
@@ -71,11 +71,15 @@ function Customers() {
       alert("Name is required");
       return;
     }
+    if (!editingCustomer.address || !editingCustomer.address.trim() || editingCustomer.address.trim().toLowerCase() === 'n/a') {
+      alert("Address cannot be empty or N/A");
+      return;
+    }
     
     const { error } = await supabase.from('customers').update({
       name: editingCustomer.name.trim(),
       phone: editingCustomer.phone,
-      address: editingCustomer.address,
+      address: editingCustomer.address.trim(),
       items: editingCustomer.items
     }).eq('id', editingCustomer.id);
 
@@ -157,12 +161,16 @@ function Customers() {
       setError("Please enter a valid 10-digit Phone Number.");
       return;
     }
+    if (!newCust.address || !newCust.address.trim() || newCust.address.trim().toLowerCase() === 'n/a') {
+      setError("Please enter a valid Address.");
+      return;
+    }
 
     setError(''); // Clear error
     const { data, error } = await supabase.from('customers').insert([{
       name: newCust.name.trim(),
       phone: newCust.phone || 'N/A',
-      address: newCust.address || 'N/A',
+      address: newCust.address.trim(),
       items: newCust.items || 'N/A'
     }]).select();
 

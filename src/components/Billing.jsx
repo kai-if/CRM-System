@@ -30,6 +30,7 @@ function Billing({ isMobile }) {
   const [bills, setBills] = useState([]);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
   const [billDate, setBillDate] = useState(new Date().toISOString().split('T')[0]);
 
   const formatDate = (dateStr) => {
@@ -79,7 +80,10 @@ function Billing({ isMobile }) {
   const handleSelectCustomer = (name) => {
     setCustomerName(name);
     const found = customers.find(c => c.name === name);
-    if (found && found.phone) setCustomerPhone(found.phone);
+    if (found) {
+      if (found.phone) setCustomerPhone(found.phone);
+      if (found.address && found.address !== 'N/A') setCustomerAddress(found.address);
+    }
   };
 
   const handleAddItem = () => {
@@ -155,8 +159,12 @@ function Billing({ isMobile }) {
   };
 
   const handleSaveBill = async () => {
-    if (!customerName) {
+    if (!customerName || !customerName.trim()) {
       alert("Please select or enter customer name.");
+      return;
+    }
+    if (!customerAddress || !customerAddress.trim() || customerAddress.trim().toLowerCase() === 'n/a') {
+      alert("Please enter a valid Customer Address.");
       return;
     }
     const billData = {
@@ -179,7 +187,7 @@ function Billing({ isMobile }) {
       const { data: newCustomer } = await supabase.from('customers').insert([{
         name: customerName.trim(),
         phone: customerPhone || 'N/A',
-        address: 'N/A',
+        address: customerAddress.trim(),
         items: items[0]?.description || 'General Item'
       }]).select();
 
@@ -220,6 +228,7 @@ function Billing({ isMobile }) {
     // Reset Form
     setCustomerName('');
     setCustomerPhone('');
+    setCustomerAddress('');
     setItems([{ description: '', price: '', quantity: 1 }]);
     setDiscount(0);
     setDiscountType('amount');
@@ -239,6 +248,14 @@ function Billing({ isMobile }) {
     setEditingBillId(bill.id);
     setCustomerName(bill.customer_name);
     setCustomerPhone(bill.customer_phone);
+    
+    const found = customers.find(c => c.name === bill.customer_name);
+    if (found && found.address && found.address !== 'N/A') {
+      setCustomerAddress(found.address);
+    } else {
+      setCustomerAddress('');
+    }
+
     setItems(bill.items);
 
     setDiscount(bill.discount);
@@ -392,7 +409,7 @@ function Billing({ isMobile }) {
           <h3 style={{ fontSize: '18px', borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>Client & Items</h3>
 
           {/* Client Details */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-muted)' }}>Customer Name</label>
@@ -412,6 +429,10 @@ function Billing({ isMobile }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-muted)' }}>Phone Number</label>
               <input type="text" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="+91 98765..." style={inputStyle} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-muted)' }}>Address</label>
+              <input type="text" value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} placeholder="Full Address" style={inputStyle} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-muted)' }}>Invoice Date</label>

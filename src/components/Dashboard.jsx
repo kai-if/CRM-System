@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { DollarSign, Users, ShoppingBag, TrendingUp, X, FileText } from 'lucide-react';
 import { supabase } from '../supabaseClient';
+import { createPortal } from 'react-dom';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -274,11 +275,11 @@ function Dashboard({ isMobile }) {
       </div>
 
       {/* Modal View Detail */}
-      {selectedSale && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div className="luxury-card" style={{ width: '450px', background: 'white', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative' }}>
+      {selectedSale && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10000 }}>
+          <div className="luxury-card" style={{ width: '450px', background: 'white', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', maxHeight: '90vh', overflowY: 'auto' }}>
             <button onClick={() => setSelectedSale(null)} style={{ position: 'absolute', top: '16px', right: '16px', color: 'var(--text-muted)', background: 'transparent', border: 'none' }}><X size={20} /></button>
-            <h3 style={{ fontSize: '18px', borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>Sale Details</h3>
+            <h3 style={{ fontSize: '18px', borderBottom: '1px solid var(--border-light)', paddingBottom: '12px', paddingRight: '24px' }}>Sale Details</h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
               <p><strong>Invoice No:</strong> SF-{selectedSale.id.slice(-6).toUpperCase()}</p>
@@ -286,7 +287,6 @@ function Dashboard({ isMobile }) {
               <p><strong>Address:</strong> {customers.find(c => c.name === selectedSale.customer_name)?.address || 'N/A'}</p>
               <p><strong>Date:</strong> {formatDate(selectedSale.date)}</p>
             </div>
-
 
             <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid var(--border-light)', borderRadius: '8px', padding: '12px' }}>
               <table style={{ width: '100%', fontSize: '12px', textAlign: 'left', borderCollapse: 'collapse' }}>
@@ -314,9 +314,10 @@ function Dashboard({ isMobile }) {
               <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--accent-gold-dark)' }}>₹{selectedSale.total}</span>
             </div>
 
-            <button onClick={() => setSelectedSale(null)} className="luxury-button" style={{ marginTop: '8px' }}>Close</button>
+            <button onClick={() => setSelectedSale(null)} className="luxury-button gold-button" style={{ marginTop: '8px' }}>Close</button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
