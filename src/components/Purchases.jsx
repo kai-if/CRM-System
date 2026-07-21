@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, ShoppingBag, Truck, Calendar, DollarSign } from 'lucide-react';
+import { Plus, Trash2, ShoppingBag, Truck, DollarSign, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 function Purchases({ isMobile }) {
@@ -24,12 +24,7 @@ function Purchases({ isMobile }) {
   const [paymentMode, setPaymentMode] = useState('Cash'); // 'Cash', 'UPI', 'Bank', 'Card'
   const [updatingRecord, setUpdatingRecord] = useState(null);
   const [updateDate, setUpdateDate] = useState(new Date().toISOString().split('T')[0]);
-  const [updatePaymentMode, setUpdatePaymentMode] = useState('Cash'); // 'Cash', 'UPI', 'Online', 'Card'
-
-
-
-
-
+  const [updatePaymentMode, setUpdatePaymentMode] = useState('Cash');
 
   useEffect(() => {
     fetchRecords();
@@ -47,6 +42,20 @@ function Purchases({ isMobile }) {
     const { data } = await supabase.from('inventory').select('*').order('item_name');
     if (data) setInventory(data);
   };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'N/A';
+    const d = new Date(dateStr);
+    if (isNaN(d)) return dateStr;
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}/${d.getFullYear()}`;
+  };
+
+  // Metrics
+  const totalSpend = records.reduce((sum, r) => sum + (parseFloat(r.total_cost || 0)), 0);
+  const totalPaid = records.reduce((sum, r) => sum + (parseFloat(r.amount_paid || 0)), 0);
+  const pendingDues = totalSpend - totalPaid;
 
   const handleSaveRecord = async (e) => {
     e.preventDefault();
@@ -78,10 +87,9 @@ function Purchases({ isMobile }) {
       alert("Record Saved Successfully!");
       setRecords([data[0], ...records]);
 
-      // 🔄 AUTO-RESTOCK INVENTORY
+      // AUTO-RESTOCK INVENTORY
       if (itemType === 'Ready Goods') {
         if (createNewInventory && sellingPrice) {
-          // 🆕 CREATE NEW INVENTORY ITEM
           await supabase.from('inventory').insert([{
             item_name: itemName.trim(),
             stock_quantity: parseFloat(quantity),
@@ -90,16 +98,14 @@ function Purchases({ isMobile }) {
           setCreateNewInventory(false);
           setSellingPrice('');
         } else if (linkedInventoryId) {
-          // 🔄 RESTOCK EXISTING
           const selectedItem = inventory.find(i => i.id === linkedInventoryId);
           if (selectedItem) {
             const newQty = (selectedItem.stock_quantity || 0) + parseFloat(quantity);
             await supabase.from('inventory').update({ stock_quantity: newQty }).eq('id', linkedInventoryId);
           }
         }
-        fetchInventory(); // Refresh local list
+        fetchInventory();
       }
-
 
       // Reset Form
       setItemName('');
@@ -133,7 +139,7 @@ function Purchases({ isMobile }) {
 
     const { error } = await supabase.from('procurement').update({
       status: 'Paid',
-      amount_paid: updatingRecord.total_cost, // Clear fully
+      amount_paid: updatingRecord.total_cost,
       purchase_date: updateDate,
       payment_mode: updatePaymentMode
     }).eq('id', updatingRecord.id);
@@ -142,22 +148,9 @@ function Purchases({ isMobile }) {
       setRecords(records.map(r => r.id === updatingRecord.id ? { ...r, status: 'Paid', amount_paid: r.total_cost, purchase_date: updateDate, payment_mode: updatePaymentMode } : r));
       setUpdatingRecord(null);
       alert("Payment cleared for " + updatingRecord.item_name);
-
     } else {
       alert("Error updating payment: " + error.message);
     }
-  };
-
-
-  // Metrics
-  const totalSpend = records.reduce((sum, r) => sum + (r.total_cost || 0), 0);
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    const d = new Date(dateStr);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    return `${day}/${month}/${d.getFullYear()}`;
   };
 
   return (
@@ -171,8 +164,16 @@ function Purchases({ isMobile }) {
       {/* Overview Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '16px' }}>
         <div className="luxury-card" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ background: '#C19A6B15', padding: '10px', borderRadius: '10px' }}><DollarSign size={20} color="#C19A6B" /></div>
+          <div style={{ background: '#E53E3E15', padding: '10px', borderRadius: '10px' }}><DollarSign size={20} color="#E53E3E" /></div>
           <div><p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Total Outflow</p><h3 style={{ fontSize: '20px', fontWeight: 600 }}>₹{totalSpend.toLocaleString()}</h3></div>
+        </div>
+        <div className="luxury-card" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ background: '#15803D15', padding: '10px', borderRadius: '10px' }}><CheckCircle size={20} color="#15803D" /></div>
+          <div><p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Amount Paid</p><h3 style={{ fontSize: '20px', fontWeight: 600, color: '#15803D' }}>₹{totalPaid.toLocaleString()}</h3></div>
+        </div>
+        <div className="luxury-card" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ background: '#B91C1C15', padding: '10px', borderRadius: '10px' }}><AlertCircle size={20} color="#B91C1C" /></div>
+          <div><p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Pending Supplier Dues</p><h3 style={{ fontSize: '20px', fontWeight: 600, color: '#B91C1C' }}>₹{pendingDues.toLocaleString()}</h3></div>
         </div>
         <div className="luxury-card" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ background: '#82624515', padding: '10px', borderRadius: '10px' }}><ShoppingBag size={20} color="#826245" /></div>
@@ -183,7 +184,6 @@ function Purchases({ isMobile }) {
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 2fr', gap: '24px', alignItems: 'start' }}>
         {/* Form */}
         <form onSubmit={handleSaveRecord} className="luxury-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', minWidth: 0 }}>
-
           <h3 style={{ fontSize: '16px', borderBottom: '1px solid var(--border-light)', paddingBottom: '8px' }}>Log New Purchase / Cost</h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -200,7 +200,6 @@ function Purchases({ isMobile }) {
             <input type="text" value={itemName} onChange={(e) => setItemName(e.target.value)} placeholder="e.g., Tunga Wood, Polish" style={inputStyle} />
           </div>
 
-          {/* Conditional Restock Linkage for Ready Goods */}
           {itemType === 'Ready Goods' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: '#F9F6F2', padding: '12px', borderRadius: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -280,8 +279,6 @@ function Purchases({ isMobile }) {
           <button type="submit" className="gold-button" style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', padding: '12px' }}>
             <Plus size={18} /> Save Record
           </button>
-
-
         </form>
 
         {/* History Table */}
@@ -332,6 +329,9 @@ function Purchases({ isMobile }) {
                       <td style={{ padding: '8px' }}><button onClick={() => handleDeleteRecord(r.id)} style={{ color: '#E53E3E' }}><Trash2 size={16} /></button></td>
                     </tr>
                   ))}
+                  {records.length === 0 && (
+                    <tr><td colSpan="10" style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>No purchase records found.</td></tr>
+                  )}
                 </tbody>
               </table>
             ) : (
@@ -411,13 +411,10 @@ function Purchases({ isMobile }) {
               </div>
             </form>
           </div>
-
         </div>
       )}
-
     </div>
   );
-
 }
 
 const inputStyle = {

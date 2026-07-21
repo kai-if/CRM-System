@@ -309,10 +309,35 @@ function Dashboard({ isMobile }) {
               </table>
             </div>
 
-            <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 600 }}>Total Paid:</span>
-              <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--accent-gold-dark)' }}>₹{selectedSale.total}</span>
-            </div>
+            {(() => {
+              const subtotal = (selectedSale.items || []).reduce((sum, item) => sum + (parseFloat(item.price || 0) * (item.quantity || 1)), 0);
+              const totalVal = parseFloat(selectedSale.total || 0);
+              const discVal = parseFloat(selectedSale.discount || 0);
+              const diff = subtotal - totalVal;
+              const hasDiscount = discVal > 0 || diff > 0.01;
+              const discountDisplay = selectedSale.discount_type === 'percent'
+                ? `${selectedSale.discount}%`
+                : `₹${parseFloat(selectedSale.discount || diff).toLocaleString()}`;
+
+              return (
+                <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Subtotal:</span>
+                    <span style={{ fontWeight: 500 }}>₹{subtotal.toLocaleString()}</span>
+                  </div>
+                  {hasDiscount && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Discount:</span>
+                      <span style={{ fontWeight: 500, color: '#E53E3E' }}>- {discountDisplay}</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '4px' }}>
+                    <span style={{ fontWeight: 600 }}>Final Amount:</span>
+                    <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--accent-gold-dark)' }}>₹{totalVal.toLocaleString()}</span>
+                  </div>
+                </div>
+              );
+            })()}
 
             <button onClick={() => setSelectedSale(null)} className="luxury-button gold-button" style={{ marginTop: '8px' }}>Close</button>
           </div>

@@ -138,9 +138,30 @@ function Customers() {
 
       // Total row shift or bottom text
       const finalY = doc.lastAutoTable.finalY + 10;
+      const subtotalVal = (bill.items || []).reduce((sum, item) => sum + (parseFloat(item.price || 0) * (item.quantity || 1)), 0);
+      const totalVal = parseFloat(bill.total || 0);
+      const discVal = parseFloat(bill.discount || 0);
+      const diff = subtotalVal - totalVal;
+      const hasDiscount = discVal > 0 || diff > 0.01;
+
+      doc.setFontSize(12);
+      doc.setTextColor(0);
+      doc.text(`Subtotal: Rs. ${subtotalVal.toLocaleString()}/-`, 140, finalY);
+
+      let currentY = finalY;
+      if (hasDiscount) {
+        currentY += 7;
+        const discountStr = bill.discount_type === 'percent'
+          ? `${bill.discount}%`
+          : `Rs. ${parseFloat(bill.discount || diff).toLocaleString()}/-`;
+        doc.text(`Discount: ${discountStr}`, 140, currentY);
+      }
+
+      currentY += 9;
       doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
       doc.setTextColor(197, 160, 89);
-      doc.text(`Total Amount: INR ${bill.total}`, 190, finalY, { align: 'right' });
+      doc.text(`Total: Rs. ${totalVal.toLocaleString()}/-`, 140, currentY);
 
       doc.output('dataurlnewwindow');
     } catch (error) {
@@ -384,25 +405,41 @@ function Customers() {
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {bills.filter(b => b.customer_name === selectedCustomer.name).map((bill, i) => (
+              {bills.filter(b => b.customer_name === selectedCustomer.name).map((bill, i) => {
+                const subtotalVal = (bill.items || []).reduce((sum, item) => sum + (parseFloat(item.price || 0) * (item.quantity || 1)), 0);
+                const totalVal = parseFloat(bill.total || 0);
+                const discVal = parseFloat(bill.discount || 0);
+                const diff = subtotalVal - totalVal;
+                const hasDiscount = discVal > 0 || diff > 0.01;
+                const discountDisplay = bill.discount_type === 'percent'
+                  ? `${bill.discount}%`
+                  : `₹${parseFloat(bill.discount || diff).toLocaleString()}`;
 
-                <div key={i} style={{ padding: '12px', border: '1px solid var(--border-light)', borderRadius: '8px', background: '#FCFAFA' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ fontWeight: 600, fontSize: '14px' }}>Date: {formatDate(bill.date)}</span>
-                    <span style={{ color: 'var(--accent-gold-dark)', fontWeight: 600 }}>Total: ₹{bill.total}</span>
-
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                      {bill.items?.map((item, idx) => (
-                        <div key={idx}>- {item.description} (x{item.quantity})</div>
-                      ))}
+                return (
+                  <div key={i} style={{ padding: '12px', border: '1px solid var(--border-light)', borderRadius: '8px', background: '#FCFAFA' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 600, fontSize: '14px' }}>Date: {formatDate(bill.date)}</span>
+                      <span style={{ color: 'var(--accent-gold-dark)', fontWeight: 600 }}>Total: ₹{totalVal.toLocaleString()}</span>
                     </div>
-                    <button onClick={() => handleViewInvoice(bill)} style={{ padding: '6px 12px', fontSize: '12px', background: 'var(--accent-gold-light)', color: 'var(--accent-gold-dark)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>Options (PDF)</button>
-                  </div>
 
-                </div>
-              ))}
+                    {hasDiscount && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                        <span>Subtotal: ₹{subtotalVal.toLocaleString()}</span>
+                        <span style={{ color: '#E53E3E' }}>Discount: - {discountDisplay}</span>
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                      <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                        {bill.items?.map((item, idx) => (
+                          <div key={idx}>- {item.description} (x{item.quantity})</div>
+                        ))}
+                      </div>
+                      <button onClick={() => handleViewInvoice(bill)} style={{ padding: '6px 12px', fontSize: '12px', background: 'var(--accent-gold-light)', color: 'var(--accent-gold-dark)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>Options (PDF)</button>
+                    </div>
+                  </div>
+                );
+              })}
               {bills.filter(b => b.customer_name === selectedCustomer.name).length === 0 && (
 
                 <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>No recorded purchases found.</p>

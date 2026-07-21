@@ -328,24 +328,35 @@ function Billing({ isMobile }) {
 
 
       const finalY = doc.lastAutoTable.finalY + 10;
+      const subtotalVal = calculateSubtotal();
+      const totalAmt = calculateTotal();
+      const discVal = parseFloat(discount || 0);
+      const hasDiscount = discVal > 0;
 
       // Totals
       doc.setFontSize(12);
-      doc.text(`Subtotal: Rs. ${calculateSubtotal().toLocaleString()}/-`, 140, finalY);
-      doc.text(`Discount: ${discountType === 'percent' ? discount + '%' : 'Rs. ' + parseFloat(discount || 0).toLocaleString() + '/-'}`, 140, finalY + 7);
+      doc.text(`Subtotal: Rs. ${subtotalVal.toLocaleString()}/-`, 140, finalY);
+
+      let currentY = finalY;
+      if (hasDiscount) {
+        currentY += 7;
+        const discountStr = discountType === 'percent' ? discount + '%' : 'Rs. ' + discVal.toLocaleString() + '/-';
+        doc.text(`Discount: ${discountStr}`, 140, currentY);
+      }
+
+      currentY += 9;
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text(`Total: Rs. ${calculateTotal().toLocaleString()}/-`, 140, finalY + 16);
+      doc.text(`Total: Rs. ${totalAmt.toLocaleString()}/-`, 140, currentY);
 
       doc.setFontSize(11);
-      const totalAmt = calculateTotal();
-      doc.text(`Amount in Words: ${numberToWords(totalAmt)} Only`, 20, finalY + 23);
-
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Amount in Words: ${numberToWords(totalAmt)} Only`, 20, currentY + 9);
 
       // Footer
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.text('Thank you for shopping with Saifi Furniture!', 105, finalY + 40, { align: 'center' });
+      doc.text('Thank you for shopping with Saifi Furniture!', 105, currentY + 26, { align: 'center' });
 
       // Open PDF in a new tab for preview and safe download/printing
       // Prompt to Download
@@ -384,9 +395,18 @@ function Billing({ isMobile }) {
 
   const handleSendWhatsApp = () => {
     const total = calculateTotal();
+    const subtotal = calculateSubtotal();
+    const discVal = parseFloat(discount || 0);
+    const hasDiscount = discVal > 0;
     const cleanPhone = customerPhone.replace(/\D/g, ''); // Remove non-digits
 
-    const textMsg = `*✨ SAIFI FURNITURE ✨*\n\nHello *${customerName}*,\n\nThank you for shopping with us! Here is your bill summary:\n\n*Items:*\n${items.map(item => `- ${item.description || 'Item'} (x${item.quantity})`).join('\n')}\n\n*Total Amount:* ₹${total.toLocaleString()}\n\nWe hope you love your new furniture! Please find the attached invoice PDF above.\nHave a wonderful day! 🌟`;
+    let summaryText = `*Total Amount:* ₹${total.toLocaleString()}`;
+    if (hasDiscount) {
+      const discountStr = discountType === 'percent' ? `${discount}%` : `₹${discVal.toLocaleString()}`;
+      summaryText = `*Subtotal:* ₹${subtotal.toLocaleString()}\n*Discount:* ${discountStr}\n*Final Amount:* ₹${total.toLocaleString()}`;
+    }
+
+    const textMsg = `*✨ SAIFI FURNITURE ✨*\n\nHello *${customerName}*,\n\nThank you for shopping with us! Here is your bill summary:\n\n*Items:*\n${items.map(item => `- ${item.description || 'Item'} (x${item.quantity})`).join('\n')}\n\n${summaryText}\n\nWe hope you love your new furniture! Please find the attached invoice PDF above.\nHave a wonderful day! 🌟`;
 
     const encoded = encodeURIComponent(textMsg);
     const waUrl = `https://wa.me/${cleanPhone}?text=${encoded}`;
